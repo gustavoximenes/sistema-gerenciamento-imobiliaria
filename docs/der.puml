@@ -2,7 +2,7 @@
 !pragma layout smetana
 skinparam shadowing false
 hide circle
-title Diagrama Entidade-Relacionamento — banco H2
+title Diagrama Entidade-Relacionamento — PostgreSQL do Supabase
 
 entity cliente {
   * id : BIGINT <<PK>>
@@ -52,11 +52,25 @@ entity visita {
   status : VARCHAR(12)
   ativo : SMALLINT
 }
+entity equipe {
+  * auth_id : UUID <<PK, FK auth.users>>
+  --
+  nome : VARCHAR(100)
+  ativo : BOOLEAN
+}
+entity historico_navegacao {
+  * id : BIGINT <<PK>>
+  --
+  * auth_id : UUID <<FK auth.users>>
+  * imovel_id : BIGINT <<FK>>
+  consultado_em : TIMESTAMPTZ
+}
 proprietario ||--o{ imovel
 corretor ||--o{ horario
 cliente ||--o{ visita
 imovel ||--o{ visita
 horario ||--o{ visita
+imovel ||--o{ historico_navegacao
 note right of visita
   FK (horario_id, inicio) → horario(id, inicio).
   Índices únicos impedem conflitos por horário,

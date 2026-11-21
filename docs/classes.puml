@@ -47,6 +47,11 @@ package "DTOs de domínio (records Java)" {
     +precoRegistrado(): BigDecimal
     +status(): StatusVisita
   }
+  class "DTO.Historico" as Historico <<record>> {
+    +imovelId(): long
+    +titulo(): String
+    +consultadoEm(): LocalDateTime
+  }
   enum StatusImovel {
     DISPONIVEL
     RESERVADO
@@ -64,6 +69,8 @@ package "DTOs de domínio (records Java)" {
   Horario "1" -- "0..*" Visita : histórico
   Imovel ..> StatusImovel
   Visita ..> StatusVisita
+  Cliente "1" -- "0..*" Historico : consulta
+  Imovel "1" -- "0..*" Historico : visualizado
 }
 note right of Horario
   Um horário pode ter vários registros históricos.
@@ -71,7 +78,7 @@ note right of Horario
 end note
 note bottom of Visita
   DTO de domínio. As ações de visita gravam
-  e consultam linhas no DAO via JDBC.
+  e consultam linhas no DAO via API REST.
   Associações representadas por IDs.
 end note
 
@@ -106,7 +113,7 @@ package "Aplicação e persistência" {
     +produtividade(): List
     +ticketMedio(): Object
   }
-  class "H2 via JDBC" as H2 <<database>>
+  class "PostgreSQL do Supabase" as SupabaseDB <<database>>
   App --> ImobiliariaBO
   App --> ImobiliariaDAO : consultas
   App ..> View : renderiza
@@ -116,6 +123,6 @@ package "Aplicação e persistência" {
   ImobiliariaBO --> ImobiliariaDAO
   ImobiliariaBO ..> Imovel : cria DTO para salvar
   ImobiliariaDAO ..> Imovel : persiste e consulta
-  ImobiliariaDAO --> H2
+  ImobiliariaDAO --> SupabaseDB : API REST + RLS
 }
 @enduml

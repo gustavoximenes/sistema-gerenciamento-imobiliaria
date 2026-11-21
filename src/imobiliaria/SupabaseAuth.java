@@ -29,8 +29,12 @@ public final class SupabaseAuth {
         return JsonParser.parseString(res.body()).getAsJsonObject().get("access_token").getAsString();
     }
 
-    public void cadastrar(String email, String senha) throws Falha {
-        var res = chamar("/signup", gson.toJson(Map.of("email", email, "password", senha)), null);
+    public void cadastrar(String nome, String email, String senha) throws Falha {
+        var res = chamar("/signup", gson.toJson(Map.of(
+            "email", email,
+            "password", senha,
+            "data", Map.of("nome", nome)
+        )), null);
         if (res.statusCode() / 100 != 2) throw new Falha(res.statusCode() == 429 ? 429 : 400,
             "O Supabase não concluiu o cadastro. Confira o e-mail e tente novamente.");
     }

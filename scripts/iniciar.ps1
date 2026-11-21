@@ -2,7 +2,6 @@ $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..')
 New-Item -ItemType Directory -Force build, build/lib, build/classes | Out-Null
 $libs = @{
-    'h2-2.3.232.jar' = 'com/h2database/h2/2.3.232'
     'gson-2.13.2.jar' = 'com/google/code/gson/gson/2.13.2'
 }
 foreach ($jar in $libs.Keys) {

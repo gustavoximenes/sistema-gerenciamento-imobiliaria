@@ -16,15 +16,20 @@ public final class ImobiliariaBO {
 
     public void cadastrar(String tipo, Map<String,String> f) throws SQLException, Falha {
         switch (tipo) {
-            case "clientes" -> dao.salvar(new DTO.Cliente(0,campo(f,"nome",100),email(f),null));
+            case "clientes" -> dao.salvar(new DTO.Cliente(0,campo(f,"nome",100),email(f),opcional(f,"telefone",25),null));
             case "corretores" -> dao.salvar(new DTO.Corretor(0,campo(f,"nome",100),email(f),campo(f,"creci",30)));
-            case "proprietarios" -> dao.salvar(new DTO.Proprietario(0,campo(f,"nome",100),email(f)));
+            case "proprietarios" -> dao.salvar(new DTO.Proprietario(0,campo(f,"nome",100),email(f),opcional(f,"telefone",25)));
             case "imoveis" -> {
                 var preco = new BigDecimal(campo(f,"preco",15).replace(',','.'));
                 if (preco.signum() <= 0 || preco.scale() > 2 || preco.precision()-preco.scale()>12)
                     throw new Falha(400,"Informe um preço positivo com até duas casas decimais.");
-                dao.salvar(new DTO.Imovel(0,id(f,"proprietario"),campo(f,"titulo",100),campo(f,"bairro",70),
-                    campo(f,"endereco",180),preco,DTO.StatusImovel.DISPONIVEL));
+                var area = new BigDecimal(campo(f,"area",12).replace(',','.'));
+                if (area.signum() <= 0) throw new Falha(400,"Informe uma área válida.");
+                dao.salvar(new DTO.Imovel(0,id(f,"proprietario"),campo(f,"titulo",100),
+                    campo(f,"descricao",1200),campo(f,"tipo",30),campo(f,"bairro",70),
+                    campo(f,"cidade",70),campo(f,"endereco",180),inteiro(f,"quartos",0,30),
+                    inteiro(f,"banheiros",0,30),inteiro(f,"vagas",0,30),area,preco,
+                    "on".equals(f.get("destaque")),DTO.StatusImovel.DISPONIVEL));
             }
             case "horarios" -> {
                 var inicio = LocalDateTime.parse(campo(f,"inicio",25));
@@ -56,6 +61,14 @@ public final class ImobiliariaBO {
         dao.mudarImovel(id(f,"id"),DTO.StatusImovel.valueOf(campo(f,"status",12)));
     }
 
+    public void atualizarPerfil(Map<String,String> f, DTO.Identidade identidade) throws SQLException, Falha {
+        dao.atualizarPerfil(campo(f,"nome",100),opcional(f,"telefone",25),identidade.id());
+    }
+
+    public static String nome(Map<String,String> f) throws Falha {
+        return campo(f,"nome",100);
+    }
+
     public static String email(Map<String,String> f) throws Falha {
         String email = campo(f,"email",254).toLowerCase(Locale.ROOT);
         if (!email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) throw new Falha(400,"Informe um e-mail válido.");
@@ -66,6 +79,18 @@ public final class ImobiliariaBO {
         long id = Long.parseLong(campo(f,chave,19));
         if (id<=0) throw new Falha(400,"Selecione um registro válido.");
         return id;
+    }
+
+    private static int inteiro(Map<String,String> f,String chave,int minimo,int maximo) throws Falha {
+        int valor=Integer.parseInt(campo(f,chave,3));
+        if(valor<minimo||valor>maximo) throw new Falha(400,"Revise o campo "+chave+".");
+        return valor;
+    }
+
+    private static String opcional(Map<String,String> f,String chave,int max) throws Falha {
+        String valor=f.getOrDefault(chave,"").strip();
+        if(valor.length()>max) throw new Falha(400,"Revise o campo "+chave+".");
+        return valor.isEmpty()?null:valor;
     }
 
     private static String campo(Map<String,String> f, String chave, int max) throws Falha {
