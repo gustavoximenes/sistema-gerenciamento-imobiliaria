@@ -83,7 +83,7 @@ public final class App {
             var view=new View(csrf,identidade,staff);
 
             if (post && rota.equals("/entrar")) {
-                String novo=auth.entrar(ImobiliariaBO.email(f),senha(f));
+                String novo=auth.entrar(ImobiliariaBO.email(f),senhaLogin(f));
                 if (auth.verificar(novo)==null) throw new Falha(401,"Confirme o e-mail antes de entrar.");
                 cookie(eq,"imob_session",novo,3600);
                 redirecionar(eq,"/perfil"); return;
@@ -163,6 +163,7 @@ public final class App {
 
     private static String tipo(String rota){if(!rota.startsWith("/gestao/"))return null;String t=rota.substring("/gestao/".length());return TIPOS.contains(t)?t:null;}
     private static String senha(Map<String,String> f)throws Falha{String s=f.getOrDefault("senha","");if(s.length()<8||s.length()>256)throw new Falha(400,"A senha deve ter pelo menos 8 caracteres.");return s;}
+    private static String senhaLogin(Map<String,String> f)throws Falha{String s=f.getOrDefault("senha","");if(s.isBlank()||s.length()>256)throw new Falha(400,"Informe a senha.");return s;}
     private static Map<String,String> parametros(String texto){Map<String,String> f=new HashMap<>();if(texto==null||texto.isEmpty())return f;for(String parte:texto.split("&")){String[] p=parte.split("=",2);if(p.length==2)f.put(URLDecoder.decode(p[0],StandardCharsets.UTF_8),URLDecoder.decode(p[1],StandardCharsets.UTF_8));}return f;}
     private static String cookie(HttpExchange eq,String chave){for(String cab:eq.getRequestHeaders().getOrDefault("Cookie",List.of()))for(String p:cab.split(";"))if(p.strip().startsWith(chave+"="))return p.strip().substring(chave.length()+1);return null;}
     private static void cookie(HttpExchange eq,String chave,String valor,int segundos){eq.getResponseHeaders().add("Set-Cookie",chave+"="+valor+"; Path=/; HttpOnly; SameSite=Strict; Max-Age="+segundos);}
