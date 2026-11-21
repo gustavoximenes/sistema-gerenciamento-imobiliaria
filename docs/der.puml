@@ -1,0 +1,66 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+hide circle
+title Diagrama Entidade-Relacionamento — banco H2
+
+entity cliente {
+  * id : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  email : VARCHAR(254) <<UQ>>
+  auth_id : UUID <<UQ, opcional>>
+}
+entity corretor {
+  * id : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  email : VARCHAR(254) <<UQ>>
+  creci : VARCHAR(30) <<UQ>>
+}
+entity proprietario {
+  * id : BIGINT <<PK>>
+  --
+  nome : VARCHAR(100)
+  email : VARCHAR(254) <<UQ>>
+}
+entity imovel {
+  * id : BIGINT <<PK>>
+  --
+  * proprietario_id : BIGINT <<FK>>
+  titulo : VARCHAR(100)
+  bairro : VARCHAR(70)
+  endereco : VARCHAR(180)
+  preco : DECIMAL(14,2)
+  criado_em : DATE
+  status : VARCHAR(12)
+}
+entity horario {
+  * id : BIGINT <<PK>>
+  --
+  * corretor_id : BIGINT <<FK>>
+  * inicio : TIMESTAMP
+}
+entity visita {
+  * id : BIGINT <<PK>>
+  --
+  * cliente_id : BIGINT <<FK>>
+  * imovel_id : BIGINT <<FK>>
+  * horario_id : BIGINT <<FK composta>>
+  * inicio : TIMESTAMP <<FK composta>>
+  preco_registrado : DECIMAL(14,2)
+  status : VARCHAR(12)
+  ativo : SMALLINT
+}
+proprietario ||--o{ imovel
+corretor ||--o{ horario
+cliente ||--o{ visita
+imovel ||--o{ visita
+horario ||--o{ visita
+note right of visita
+  FK (horario_id, inicio) → horario(id, inicio).
+  Índices únicos impedem conflitos por horário,
+  imóvel e cliente. Cancelamento grava ativo NULL
+  e libera a vaga mantendo o histórico.
+end note
+@enduml

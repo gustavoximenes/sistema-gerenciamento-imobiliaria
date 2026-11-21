@@ -1,0 +1,121 @@
+@startuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+title Diagrama de Classes — Sistema de Gerenciamento de Imobiliária
+
+package "DTOs de domínio (records Java)" {
+  class "DTO.Cliente" as Cliente <<record>> {
+    +id(): long
+    +nome(): String
+    +email(): String
+    +authId(): UUID
+  }
+  class "DTO.Corretor" as Corretor <<record>> {
+    +id(): long
+    +nome(): String
+    +email(): String
+    +creci(): String
+  }
+  class "DTO.Proprietario" as Proprietario <<record>> {
+    +id(): long
+    +nome(): String
+    +email(): String
+  }
+  class "DTO.Imovel" as Imovel <<record>> {
+    +id(): long
+    +proprietarioId(): long
+    +titulo(): String
+    +bairro(): String
+    +endereco(): String
+    +preco(): BigDecimal
+    +status(): StatusImovel
+  }
+  class "DTO.Horario" as Horario <<record>> {
+    +id(): long
+    +corretorId(): long
+    +corretor(): String
+    +inicio(): LocalDateTime
+  }
+  class "DTO.Visita" as Visita <<record>> {
+    +id(): long
+    +clienteId(): long
+    +imovelId(): long
+    +horarioId(): long
+    +inicio(): LocalDateTime
+    +precoRegistrado(): BigDecimal
+    +status(): StatusVisita
+  }
+  enum StatusImovel {
+    DISPONIVEL
+    RESERVADO
+    VENDIDO
+  }
+  enum StatusVisita {
+    PENDENTE
+    REALIZADA
+    CANCELADA
+  }
+  Proprietario "1" -- "0..*" Imovel : possui
+  Corretor "1" -- "0..*" Horario : disponibiliza
+  Cliente "1" -- "0..*" Visita : solicita
+  Imovel "1" -- "0..*" Visita : recebe
+  Horario "1" -- "0..*" Visita : histórico
+  Imovel ..> StatusImovel
+  Visita ..> StatusVisita
+}
+note right of Horario
+  Um horário pode ter vários registros históricos.
+  Só pode existir uma visita não cancelada por horário.
+end note
+note bottom of Visita
+  DTO de domínio. As ações de visita gravam
+  e consultam linhas no DAO via JDBC.
+  Associações representadas por IDs.
+end note
+
+package "Aplicação e persistência" {
+  class App {
+    -atender(eq : HttpExchange): void
+    +{static} main(args : String[]): void
+  }
+  class View {
+    ~catalogo(imoveis : List): String
+    ~relatorios(dados : DTO.Relatorios): String
+  }
+  class SupabaseAuth {
+    +entrar(email : String, senha : String): String
+    +verificar(token : String): Identidade
+  }
+  class "DTO.Identidade" as Identidade <<record>> {
+    +id(): UUID
+    +email(): String
+  }
+  class ImobiliariaBO {
+    +cadastrar(tipo : String, campos : Map): void
+    +agendar(campos : Map, cliente : Long): void
+    +relatorios(): DTO.Relatorios
+    +mudarVisita(campos : Map, cliente : Long): void
+    +mudarImovel(campos : Map): void
+  }
+  class ImobiliariaDAO {
+    +salvar(dto): void
+    +reservar(cliente : long, imovel : long, horario : long, agora : LocalDateTime): void
+    +ranking(): List
+    +produtividade(): List
+    +ticketMedio(): Object
+  }
+  class "H2 via JDBC" as H2 <<database>>
+  App --> ImobiliariaBO
+  App --> ImobiliariaDAO : consultas
+  App ..> View : renderiza
+  App --> SupabaseAuth
+  SupabaseAuth ..> Identidade
+  View ..> ImobiliariaDAO : exibe cadastros
+  ImobiliariaBO --> ImobiliariaDAO
+  ImobiliariaBO ..> Imovel : cria DTO para salvar
+  ImobiliariaDAO ..> Imovel : persiste e consulta
+  ImobiliariaDAO --> H2
+}
+@enduml
