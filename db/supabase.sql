@@ -207,6 +207,9 @@ with check (private.is_equipe());
 drop policy if exists imovel_update on public.imovel;
 create policy imovel_update on public.imovel for update to authenticated
 using (private.is_equipe()) with check (private.is_equipe());
+drop policy if exists imovel_delete on public.imovel;
+create policy imovel_delete on public.imovel for delete to authenticated
+using (private.is_equipe());
 
 drop policy if exists horario_leitura on public.horario;
 create policy horario_leitura on public.horario for select to authenticated using (true);
@@ -465,7 +468,8 @@ grant select on public.imovel to anon, authenticated;
 grant select, insert, update on public.cliente to authenticated;
 grant select on public.equipe to authenticated;
 grant select, insert, update on public.corretor, public.proprietario,
-    public.imovel, public.horario, public.visita to authenticated;
+    public.horario, public.visita to authenticated;
+grant select, insert, update, delete on public.imovel to authenticated;
 grant select, insert, delete on public.historico_navegacao to authenticated;
 grant select, insert, delete on public.favorito to authenticated;
 grant insert on public.contato_lead to anon, authenticated;

@@ -25,11 +25,11 @@ A aplicação Java continua no repositório para atender aos requisitos de Java,
 - Cadastro de clientes, corretores, proprietários, imóveis e horários.
 - Informações completas do imóvel, incluindo tipo, descrição, cidade, quartos, banheiros, vagas, área, preço, destaque e status.
 - Solicitação simbólica de visita, registrada como pendente com a data desejada.
-- Administração com edição de imóveis, clientes, corretores e proprietários.
+- Administração com CRUD completo de imóveis no portal web: cadastro, consulta, edição e exclusão protegidos por RLS.
 - Administração de contas com redefinição de senha e remoção das sessões persistidas.
 - Agenda, histórico por cliente e produtividade por corretor.
 - Ranking, baixa procura, ticket médio e gráficos por bairro, dia, horário e status.
-- Portal público responsivo que funciona diretamente pelo navegador.
+- Portal público responsivo, com navegação e tabelas administrativas adaptadas para celular.
 - Busca por nome, bairro, tipo, quartos, preço e status.
 - Favoritos sincronizados por usuário e formulário de contato para a equipe.
 - Simulador educacional de parcelas e painel administrativo web.
