@@ -4,6 +4,18 @@
 
 Aplicação acadêmica em Java 17, HTML e CSS para administrar uma imobiliária. O sistema usa o **Supabase Auth** para registro e login e o **PostgreSQL do Supabase** para todos os dados da aplicação.
 
+## Versão web sem localhost
+
+A pasta [`web-publico`](web-publico) contém uma SPA em HTML, CSS e JavaScript que conversa diretamente com o mesmo Supabase. Ela não precisa do servidor Java nem de nenhum programa aberto no computador.
+
+Link público pelo GitHub Pages:
+
+**https://gustavoximenes.github.io/sistema-gerenciamento-imobiliaria/**
+
+Essa versão oferece catálogo com filtros, detalhes dos imóveis, favoritos, simulador educacional, formulário de contato, autenticação, perfil, histórico, visitas e painel administrativo. O workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) publica automaticamente alterações da pasta `web-publico/dist`.
+
+A aplicação Java continua no repositório para atender aos requisitos de Java, BO, DAO e DTO da disciplina.
+
 ## Funcionalidades
 
 - Homepage institucional, catálogo, detalhes do imóvel, sobre e contato.
@@ -17,6 +29,10 @@ Aplicação acadêmica em Java 17, HTML e CSS para administrar uma imobiliária.
 - Administração de contas com redefinição de senha e remoção das sessões persistidas.
 - Agenda, histórico por cliente e produtividade por corretor.
 - Ranking, baixa procura, ticket médio e gráficos por bairro, dia, horário e status.
+- Portal público responsivo que funciona diretamente pelo navegador.
+- Busca por nome, bairro, tipo, quartos, preço e status.
+- Favoritos sincronizados por usuário e formulário de contato para a equipe.
+- Simulador educacional de parcelas e painel administrativo web.
 
 ## Executar em localhost
 

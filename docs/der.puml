@@ -64,12 +64,29 @@ entity historico_navegacao {
   * imovel_id : BIGINT <<FK>>
   consultado_em : TIMESTAMPTZ
 }
+entity favorito {
+  * auth_id : UUID <<PK, FK auth.users>>
+  * imovel_id : BIGINT <<PK, FK>>
+  criado_em : TIMESTAMPTZ
+}
+entity contato_lead {
+  * id : BIGINT <<PK>>
+  --
+  auth_id : UUID <<FK auth.users, opcional>>
+  imovel_id : BIGINT <<FK, opcional>>
+  nome : VARCHAR(100)
+  email : VARCHAR(254)
+  mensagem : VARCHAR(1200)
+  status : VARCHAR(12)
+}
 proprietario ||--o{ imovel
 corretor ||--o{ horario
 cliente ||--o{ visita
 imovel ||--o{ visita
 horario |o--o{ visita
 imovel ||--o{ historico_navegacao
+imovel ||--o{ favorito
+imovel |o--o{ contato_lead
 note right of visita
   A solicitação simbólica registra cliente, imóvel,
   data desejada, preço e status. O horário e o

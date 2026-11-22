@@ -83,6 +83,12 @@ note bottom of Visita
 end note
 
 package "Aplicação e persistência" {
+  class "SPA pública" as WebApp {
+    +filtrarImoveis(): void
+    +alternarFavorito(id : long): void
+    +solicitarVisita(id : long): void
+    +abrirGestao(): void
+  }
   class App {
     -atender(eq : HttpExchange): void
     +{static} main(args : String[]): void
@@ -122,6 +128,7 @@ package "Aplicação e persistência" {
   App --> ImobiliariaDAO : consultas
   App ..> View : renderiza
   App --> SupabaseAuth
+  WebApp --> SupabaseDB : supabase-js + RLS
   SupabaseAuth ..> Identidade
   View ..> ImobiliariaDAO : exibe cadastros
   ImobiliariaBO --> ImobiliariaDAO

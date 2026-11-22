@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Horizonte Imóveis — catálogo, favoritos e solicitações de visita em Rio do Sul.">
+  <meta name="theme-color" content="#123c35">
+  <title>Horizonte Imóveis</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#/inicio" aria-label="Horizonte Imóveis — início"><span>H</span><strong>Horizonte<small>IMÓVEIS</small></strong></a>
+    <button class="menu-button" id="menuButton" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <nav id="mainNav" aria-label="Principal">
+      <a href="#/inicio">Início</a><a href="#/imoveis">Imóveis</a><a href="#/favoritos">Favoritos</a><a href="#/contato">Contato</a>
+      <span id="sessionNav"></span>
+    </nav>
+  </header>
+  <main id="app"><div class="loading"><span></span><p>Carregando imóveis...</p></div></main>
+  <footer>
+    <div><a class="brand footer-brand" href="#/inicio"><span>H</span><strong>Horizonte<small>IMÓVEIS</small></strong></a><p>Informação clara para encontrar um lugar para chamar de seu.</p></div>
+    <div><strong>Navegação</strong><a href="#/imoveis">Comprar</a><a href="#/favoritos">Favoritos</a><a href="#/contato">Fale conosco</a></div>
+    <div><strong>Projeto acadêmico</strong><p>Java, HTML, CSS, JavaScript e Supabase.</p><small>Gustavo de Matos Ximenes</small></div>
+  </footer>
+  <dialog id="modal"><button class="modal-close" data-close aria-label="Fechar">×</button><div id="modalContent"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
