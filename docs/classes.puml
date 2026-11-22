@@ -42,7 +42,7 @@ package "DTOs de domínio (records Java)" {
     +id(): long
     +clienteId(): long
     +imovelId(): long
-    +horarioId(): long
+    +horarioId(): Long
     +inicio(): LocalDateTime
     +precoRegistrado(): BigDecimal
     +status(): StatusVisita
@@ -66,15 +66,15 @@ package "DTOs de domínio (records Java)" {
   Corretor "1" -- "0..*" Horario : disponibiliza
   Cliente "1" -- "0..*" Visita : solicita
   Imovel "1" -- "0..*" Visita : recebe
-  Horario "1" -- "0..*" Visita : histórico
+  Horario "0..1" -- "0..*" Visita : atribuição opcional
   Imovel ..> StatusImovel
   Visita ..> StatusVisita
   Cliente "1" -- "0..*" Historico : consulta
   Imovel "1" -- "0..*" Historico : visualizado
 }
 note right of Horario
-  Um horário pode ter vários registros históricos.
-  Só pode existir uma visita não cancelada por horário.
+  A solicitação simbólica pode ser registrada sem
+  corretor. A equipe mantém horários para organização.
 end note
 note bottom of Visita
   DTO de domínio. As ações de visita gravam
@@ -105,10 +105,14 @@ package "Aplicação e persistência" {
     +relatorios(): DTO.Relatorios
     +mudarVisita(campos : Map, cliente : Long): void
     +mudarImovel(campos : Map): void
+    +editar(tipo : String, campos : Map): void
+    +alterarSenha(campos : Map): void
   }
   class ImobiliariaDAO {
     +salvar(dto): void
-    +reservar(cliente : long, imovel : long, horario : long, agora : LocalDateTime): void
+    +registrarVisita(cliente : long, imovel : long, inicio : LocalDateTime): void
+    +atualizar(dto): void
+    +alterarSenha(usuario : UUID, novaSenha : String): void
     +ranking(): List
     +produtividade(): List
     +ticketMedio(): Object

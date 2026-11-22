@@ -12,7 +12,9 @@ Aplicação acadêmica em Java 17, HTML e CSS para administrar uma imobiliária.
 - Histórico privado dos últimos imóveis consultados, salvo no Supabase.
 - Cadastro de clientes, corretores, proprietários, imóveis e horários.
 - Informações completas do imóvel, incluindo tipo, descrição, cidade, quartos, banheiros, vagas, área, preço, destaque e status.
-- Agendamento com bloqueio de conflitos de corretor, imóvel e cliente.
+- Solicitação simbólica de visita, registrada como pendente com a data desejada.
+- Administração com edição de imóveis, clientes, corretores e proprietários.
+- Administração de contas com redefinição de senha e remoção das sessões persistidas.
 - Agenda, histórico por cliente e produtividade por corretor.
 - Ranking, baixa procura, ticket médio e gráficos por bairro, dia, horário e status.
 
@@ -33,6 +35,37 @@ sh scripts/iniciar.sh
 ```
 
 Abra [http://localhost:8080](http://localhost:8080).
+
+### Passo a passo no Windows
+
+1. Instale o JDK 17 ou uma versão mais recente.
+2. Abra a pasta do projeto no Explorador de Arquivos.
+3. Clique na barra de endereço da pasta, digite `powershell` e pressione Enter.
+4. Confira se o Java está instalado:
+
+```powershell
+java -version
+javac -version
+```
+
+5. Inicie o sistema:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1
+```
+
+6. Aguarde a mensagem `Imobiliária disponível em http://localhost:8080`.
+7. Abra o navegador e acesse [http://localhost:8080](http://localhost:8080).
+8. Mantenha a janela do PowerShell aberta enquanto usar o sistema.
+9. Para desligar o localhost, volte ao PowerShell e pressione `Ctrl+C`.
+
+Se aparecer a mensagem de que `java` ou `javac` não foi reconhecido, feche e abra o PowerShell depois de instalar o JDK. Se a porta 8080 estiver ocupada, execute antes do passo 5:
+
+```powershell
+$env:IMOB_PORTA = '8081'
+```
+
+Nesse caso, abra `http://localhost:8081`.
 
 A URL e a chave publicável do projeto acadêmico estão em `config/supabase.properties`. Para usar outro projeto, defina `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` antes de iniciar. A chave administrativa `service_role` não é usada pela aplicação.
 
@@ -85,6 +118,7 @@ O DAO envia a chave publicável e o token do usuário autenticado. O PostgreSQL 
 | `/visitas` | Histórico do cliente ou agenda da equipe |
 | `/gestao/relatorios` | Indicadores e gráficos |
 | `/gestao/imoveis` | Cadastro completo de imóveis no Supabase |
+| `/gestao/usuarios` | Contas cadastradas e redefinição administrativa de senha |
 
 ## Diagramas
 

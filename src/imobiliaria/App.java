@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 
 public final class App {
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final Set<String> TIPOS = Set.of("clientes","corretores","proprietarios","imoveis","horarios");
+    private static final Set<String> TIPOS = Set.of("clientes","corretores","proprietarios","imoveis","horarios","usuarios");
     private final ImobiliariaDAO dao;
     private final ImobiliariaBO bo;
     private final SupabaseAuth auth;
@@ -107,6 +107,11 @@ public final class App {
                     case "/perfil" -> { bo.atualizarPerfil(f,identidade); redirecionar(eq,"/perfil?ok=1"); }
                     case "/perfil/historico/limpar" -> { dao.limparHistorico(); redirecionar(eq,"/perfil?historico=limpo"); }
                     case "/gestao/imovel/status" -> { bo.mudarImovel(f); redirecionar(eq,"/gestao/imoveis?ok=1"); }
+                    case "/gestao/imoveis/editar" -> { bo.editar("imoveis",f); redirecionar(eq,"/gestao/imoveis?ok=1"); }
+                    case "/gestao/clientes/editar" -> { bo.editar("clientes",f); redirecionar(eq,"/gestao/clientes?ok=1"); }
+                    case "/gestao/corretores/editar" -> { bo.editar("corretores",f); redirecionar(eq,"/gestao/corretores?ok=1"); }
+                    case "/gestao/proprietarios/editar" -> { bo.editar("proprietarios",f); redirecionar(eq,"/gestao/proprietarios?ok=1"); }
+                    case "/gestao/usuarios/senha" -> { bo.alterarSenha(f); redirecionar(eq,"/gestao/usuarios?ok=1"); }
                     default -> {
                         String tipo=tipo(rota);
                         if(tipo==null) throw new Falha(404,"Página não encontrada.");
@@ -133,15 +138,20 @@ public final class App {
                     long id=ImobiliariaBO.id(f,"imovel");
                     var imovel=dao.imovel(id);
                     if(imovel.status()!=DTO.StatusImovel.DISPONIVEL) throw new Falha(404,"Imóvel indisponível.");
-                    yield view.agendar(imovel,dao.horarios(id,cliente,bo.agora()),staff?dao.clientes():List.of());
+                    yield view.agendar(imovel,staff?dao.clientes():List.of());
                 }
                 case "/visitas" -> {
-                    Long filtro=staff&&f.containsKey("cliente")&&!f.get("cliente").isEmpty()?ImobiliariaBO.id(f,"cliente"):cliente;
+                    Long filtro=cliente;
+                    if(staff&&f.containsKey("cliente")&&!f.get("cliente").isEmpty()) filtro=ImobiliariaBO.id(f,"cliente");
                     Long corretor=staff&&f.containsKey("corretor")&&!f.get("corretor").isEmpty()?ImobiliariaBO.id(f,"corretor"):null;
                     yield view.visitas(dao.visitas(filtro,corretor),staff?dao.clientes():List.of(),
                         staff?dao.corretores():List.of(),filtro,corretor,f.containsKey("ok"));
                 }
                 case "/gestao", "/gestao/relatorios" -> view.relatorios(bo.relatorios());
+                case "/gestao/imoveis/editar" -> view.editarImovel(dao.imovel(ImobiliariaBO.id(f,"id")),dao.proprietarios());
+                case "/gestao/clientes/editar" -> view.editarCliente(dao.cliente(ImobiliariaBO.id(f,"id")));
+                case "/gestao/corretores/editar" -> view.editarCorretor(dao.corretor(ImobiliariaBO.id(f,"id")));
+                case "/gestao/proprietarios/editar" -> view.editarProprietario(dao.proprietario(ImobiliariaBO.id(f,"id")));
                 default -> {
                     String tipo=tipo(rota);
                     if(tipo==null) throw new Falha(404,"Página não encontrada.");

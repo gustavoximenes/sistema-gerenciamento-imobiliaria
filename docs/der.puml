@@ -46,11 +46,10 @@ entity visita {
   --
   * cliente_id : BIGINT <<FK>>
   * imovel_id : BIGINT <<FK>>
-  * horario_id : BIGINT <<FK composta>>
-  * inicio : TIMESTAMP <<FK composta>>
+  horario_id : BIGINT <<FK composta, opcional>>
+  * inicio : TIMESTAMPTZ <<FK composta quando horário existe>>
   preco_registrado : DECIMAL(14,2)
   status : VARCHAR(12)
-  ativo : SMALLINT
 }
 entity equipe {
   * auth_id : UUID <<PK, FK auth.users>>
@@ -69,12 +68,11 @@ proprietario ||--o{ imovel
 corretor ||--o{ horario
 cliente ||--o{ visita
 imovel ||--o{ visita
-horario ||--o{ visita
+horario |o--o{ visita
 imovel ||--o{ historico_navegacao
 note right of visita
-  FK (horario_id, inicio) → horario(id, inicio).
-  Índices únicos impedem conflitos por horário,
-  imóvel e cliente. Cancelamento grava ativo NULL
-  e libera a vaga mantendo o histórico.
+  A solicitação simbólica registra cliente, imóvel,
+  data desejada, preço e status. O horário e o
+  corretor são opcionais e podem ser atribuídos depois.
 end note
 @enduml

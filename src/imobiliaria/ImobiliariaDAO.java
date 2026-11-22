@@ -121,6 +121,27 @@ public final class ImobiliariaDAO {
         requisitar("POST","horario",o,"return=minimal");
     }
 
+    public void atualizar(DTO.Cliente c) throws SQLException {
+        JsonObject o=new JsonObject(); o.addProperty("nome",c.nome()); o.addProperty("email",c.email());
+        if(c.telefone()==null)o.add("telefone",JsonNull.INSTANCE);else o.addProperty("telefone",c.telefone());
+        requisitar("PATCH","cliente?id=eq."+c.id(),o,"return=minimal");
+    }
+
+    public void atualizar(DTO.Corretor c) throws SQLException {
+        JsonObject o=new JsonObject(); o.addProperty("nome",c.nome()); o.addProperty("email",c.email());o.addProperty("creci",c.creci());
+        requisitar("PATCH","corretor?id=eq."+c.id(),o,"return=minimal");
+    }
+
+    public void atualizar(DTO.Proprietario p) throws SQLException {
+        JsonObject o=new JsonObject(); o.addProperty("nome",p.nome());o.addProperty("email",p.email());
+        if(p.telefone()==null)o.add("telefone",JsonNull.INSTANCE);else o.addProperty("telefone",p.telefone());
+        requisitar("PATCH","proprietario?id=eq."+p.id(),o,"return=minimal");
+    }
+
+    public void atualizar(DTO.Imovel i) throws SQLException {
+        requisitar("PATCH","imovel?id=eq."+i.id(),imovelJson(i),"return=minimal");
+    }
+
     public void mudarImovel(long id, DTO.StatusImovel status) throws SQLException, Falha {
         if (status != DTO.StatusImovel.DISPONIVEL) {
             JsonArray pendentes = get("visita?select=id&imovel_id=eq."+id+"&status=eq.PENDENTE&limit=1");
@@ -130,17 +151,14 @@ public final class ImobiliariaDAO {
         requisitar("PATCH","imovel?id=eq."+id,o,"return=minimal");
     }
 
-    public void reservar(long cliente, long imovel, long horario, LocalDateTime agora) throws SQLException, Falha {
+    public void registrarVisita(long cliente, long imovel, LocalDateTime inicio) throws SQLException, Falha {
         JsonArray casas = get("imovel?select=preco,status&id=eq."+imovel+"&limit=1");
         if (casas.isEmpty() || !"DISPONIVEL".equals(texto(casas.get(0).getAsJsonObject(),"status")))
             throw new Falha(409,"O imóvel está indisponível.");
-        JsonArray horas = get("horario?select=inicio&id=eq."+horario+"&limit=1");
-        if (horas.isEmpty()) throw new Falha(409,"O horário está indisponível.");
-        String inicio = texto(horas.get(0).getAsJsonObject(),"inicio");
-        if (!dataHora(inicio).isAfter(agora)) throw new Falha(409,"O horário já passou.");
         JsonObject o = new JsonObject();
         o.addProperty("cliente_id",cliente); o.addProperty("imovel_id",imovel);
-        o.addProperty("horario_id",horario); o.addProperty("inicio",inicio);
+        o.add("horario_id",JsonNull.INSTANCE);
+        o.addProperty("inicio",inicio.atZone(FUSO).toOffsetDateTime().toString());
         o.addProperty("preco_registrado",decimal(casas.get(0).getAsJsonObject(),"preco"));
         o.addProperty("status","PENDENTE");
         requisitar("POST","visita",o,"return=minimal");
@@ -163,12 +181,39 @@ public final class ImobiliariaDAO {
         return linhas(get("cliente?select=id,nome,email&order=nome"),"id","nome","email");
     }
 
+    public DTO.Cliente cliente(long id) throws SQLException, Falha {
+        JsonArray d=get("cliente?select=id,nome,email,telefone,auth_id&id=eq."+id+"&limit=1");
+        if(d.isEmpty())throw new Falha(404,"Cliente não encontrado.");JsonObject o=d.get(0).getAsJsonObject();
+        return new DTO.Cliente(numero(o,"id"),texto(o,"nome"),texto(o,"email"),textoNulo(o,"telefone"),
+            o.get("auth_id").isJsonNull()?null:UUID.fromString(texto(o,"auth_id")));
+    }
+
     public List<List<Object>> corretores() throws SQLException {
         return linhas(get("corretor?select=id,nome,email,creci&order=nome"),"id","nome","email","creci");
     }
 
+    public DTO.Corretor corretor(long id)throws SQLException,Falha{
+        JsonArray d=get("corretor?select=id,nome,email,creci&id=eq."+id+"&limit=1");if(d.isEmpty())throw new Falha(404,"Corretor não encontrado.");JsonObject o=d.get(0).getAsJsonObject();
+        return new DTO.Corretor(numero(o,"id"),texto(o,"nome"),texto(o,"email"),texto(o,"creci"));
+    }
+
     public List<List<Object>> proprietarios() throws SQLException {
         return linhas(get("proprietario?select=id,nome,email&order=nome"),"id","nome","email");
+    }
+
+    public DTO.Proprietario proprietario(long id)throws SQLException,Falha{
+        JsonArray d=get("proprietario?select=id,nome,email,telefone&id=eq."+id+"&limit=1");if(d.isEmpty())throw new Falha(404,"Proprietário não encontrado.");JsonObject o=d.get(0).getAsJsonObject();
+        return new DTO.Proprietario(numero(o,"id"),texto(o,"nome"),texto(o,"email"),textoNulo(o,"telefone"));
+    }
+
+    public List<List<Object>> usuarios() throws SQLException {
+        JsonElement dados=requisitar("POST","rpc/listar_usuarios_admin",new JsonObject(),null);
+        return linhasConvertidas(dados.getAsJsonArray(),"id","email","nome","criado_em");
+    }
+
+    public void alterarSenha(UUID usuario,String novaSenha)throws SQLException{
+        JsonObject o=new JsonObject();o.addProperty("p_usuario",usuario.toString());o.addProperty("p_nova_senha",novaSenha);
+        requisitar("POST","rpc/alterar_senha_usuario",o,null);
     }
 
     public List<DTO.Imovel> imoveis(boolean disponiveis) throws SQLException {
@@ -310,7 +355,7 @@ public final class ImobiliariaDAO {
                 JsonElement v=o.get(campo);
                 if(v==null||v.isJsonNull()) linha.add(null);
                 else if(campo.equals("preco_registrado")) linha.add(v.getAsBigDecimal());
-                else if(campo.equals("inicio")||campo.equals("ultima_visita")) linha.add(dataHora(v.getAsString()));
+                else if(campo.equals("inicio")||campo.equals("ultima_visita")||campo.equals("criado_em")) linha.add(dataHora(v.getAsString()));
                 else if(v.getAsJsonPrimitive().isNumber()) linha.add(v.getAsLong());
                 else linha.add(v.getAsString());
             }
